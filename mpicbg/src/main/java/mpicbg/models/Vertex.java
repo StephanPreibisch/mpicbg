@@ -13,6 +13,8 @@ import java.util.Set;
  */
 public class Vertex extends Point
 {
+	private static final long serialVersionUID = 4946892367509853749L;
+	
 	/**
 	 * A set of {@link Spring Springs} with {@link Spring#getV1() v1} being
 	 * this {@link Vertex} and {@link Spring#getV2() v2} being the
