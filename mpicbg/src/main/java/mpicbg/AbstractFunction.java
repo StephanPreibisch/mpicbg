@@ -22,6 +22,15 @@ public abstract class AbstractFunction< F extends Function< F, P >, P > implemen
 	 */
 	protected double cost = Double.MAX_VALUE;
 
+	/**
+	 * The cost depends on what kind of algorithm is running.  It is always
+	 * true that a smaller cost is better than large cost
+	 */
+	@Override
+	final public double getCost(){ return cost; }
+	@Override
+	final public void setCost( final double c ){ cost = c; }
+
 	@Override
 	public < E extends P > boolean ransac(
 			final Fitter< F, P > fitter,
@@ -82,11 +91,13 @@ A:		while ( i < iterations )
 				}
 				isGood = m.test( candidates, tempInliers, epsilon, minInlierRatio, minNumInliers );
 			}
+
 			if (
 					isGood &&
 					m.betterThan( copy ) &&
 					tempInliers.size() >= minNumInliers )
 			{
+				
 				copy.set( m );
 				inliers.clear();
 				inliers.addAll( tempInliers );
@@ -125,10 +136,10 @@ A:		while ( i < iterations )
 	{
 		inliers.clear();
 		
-		for ( final E m : candidates )
+		for ( final E pm : candidates )
 		{
 			//m.apply( this );
-			if ( this.getDistance( m ) < epsilon ) inliers.add( m );
+			if ( this.getDistance( pm ) < epsilon ) inliers.add( pm );
 		}
 		
 		final float ir = ( float )inliers.size() / ( float )candidates.size();
@@ -150,7 +161,7 @@ A:		while ( i < iterations )
 	@Override
 	final public boolean betterThan( final F m )
 	{
-		if ( cost < 0 ) return false;
-		return cost < m.getCost();
+		if ( getCost() < 0 ) return false;
+		return getCost() < m.getCost();
 	}
 }

@@ -4,7 +4,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
 import mpicbg.AbstractFunction;
 
@@ -63,7 +62,7 @@ public abstract class AbstractModel< M extends AbstractModel< M > > extends Abst
 	public void fit( final M function, final Collection< ? extends PointMatch > matches )
 			throws NotEnoughDataPointsException, IllDefinedDataPointsException
 	{
-		this.fit( matches );
+		function.fit( matches );
 	}
 
 	@Override
@@ -84,22 +83,6 @@ public abstract class AbstractModel< M extends AbstractModel< M > > extends Abst
 	@Override
 	final public int getMinSetSize(){ return getMinNumMatches(); }
 	
-	// real random
-	//final Random random = new Random( System.currentTimeMillis() );
-	// repeatable results
-	final static protected Random rnd = new Random( 69997 );
-
-	
-	/**
-	 * The cost depends on what kind of algorithm is running.  It is always
-	 * true that a smaller cost is better than large cost
-	 */
-	protected double cost = Double.MAX_VALUE;
-	@Override
-	final public double getCost(){ return cost; }
-	@Override
-	final public void setCost( final double c ){ cost = c; }
-
 	/**
 	 * @deprecated The term Error may be missleading---use {@link #getCost()} instead
 	 */
