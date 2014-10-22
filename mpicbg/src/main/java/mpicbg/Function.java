@@ -32,10 +32,10 @@ public interface Function< F extends Function< F, P >, P >
 	 * Call {@link #ransac(List, Collection, int, double, double, int)} with
 	 * minNumInliers = {@link #getMinNumMatches()}.
 	 */
-	public boolean ransac(
+	public < E extends P > boolean ransac(
 			final Fitter< F, P > fitter,
-			final List< P > candidates,
-			final Collection< P > inliers,
+			final List< E > candidates,
+			final Collection< E > inliers,
 			final int iterations,
 			final double epsilon,
 			final double minInlierRatio,
@@ -66,9 +66,9 @@ public interface Function< F extends Function< F, P >, P >
 	 * @param minInlierRatio minimal ratio |inliers| / |candidates| (0.0 => 0%, 1.0 => 100%)
 	 * @param minNumInliers minimally required absolute number of inliers
 	 */
-	public boolean test(
-			final Collection< P > candidates,
-			final Collection< P > inliers,
+	public < E extends P > boolean test(
+			final Collection< E > candidates,
+			final Collection< E > inliers,
 			final double epsilon,
 			final double minInlierRatio,
 			final int minNumInliers );
@@ -77,9 +77,9 @@ public interface Function< F extends Function< F, P >, P >
 	 * Call {@link #test(Collection, Collection, double, double, int)} with
 	 * minNumInliers = {@link #getMinNumMatches()}.
 	 */
-	public boolean test(
-			final Collection< P > candidates,
-			final Collection< P > inliers,
+	public < E extends P > boolean test(
+			final Collection< E > candidates,
+			final Collection< E > inliers,
 			final double epsilon,
 			final double minInlierRatio );
 

@@ -23,10 +23,10 @@ public abstract class AbstractFunction< F extends Function< F, P >, P > implemen
 	protected double cost = Double.MAX_VALUE;
 
 	@Override
-	public boolean ransac(
+	public < E extends P > boolean ransac(
 			final Fitter< F, P > fitter,
-			final List< P > candidates,
-			final Collection< P > inliers,
+			final List< E > candidates,
+			final Collection< E > inliers,
 			final int iterations,
 			final double epsilon,
 			final double minInlierRatio,
@@ -44,7 +44,7 @@ public abstract class AbstractFunction< F extends Function< F, P >, P > implemen
 		inliers.clear();
 		
 		int i = 0;
-		final HashSet< P > minMatches = new HashSet< P >();
+		final HashSet< E > minMatches = new HashSet< E >();
 		
 A:		while ( i < iterations )
 		{
@@ -52,7 +52,7 @@ A:		while ( i < iterations )
 			minMatches.clear();
 			for ( int j = 0; j < getMinNumFitables(); ++j )
 			{
-				P p;
+				E p;
 				do
 				{
 					p = candidates.get( ( int )( rnd.nextDouble() * candidates.size() ) );
@@ -66,8 +66,8 @@ A:		while ( i < iterations )
 				++i;
 				continue;
 			}
-			
-			final ArrayList< P > tempInliers = new ArrayList< P >();
+
+			final ArrayList< E > tempInliers = new ArrayList< E >();
 			
 			int numInliers = 0;
 			boolean isGood = m.test( candidates, tempInliers, epsilon, minInlierRatio );
@@ -116,16 +116,16 @@ A:		while ( i < iterations )
 	 * @param minNumInliers minimally required absolute number of inliers
 	 */
 	@Override
-	final public boolean test(
-			final Collection< P > candidates,
-			final Collection< P > inliers,
+	final public < E extends P > boolean test(
+			final Collection< E > candidates,
+			final Collection< E > inliers,
 			final double epsilon,
 			final double minInlierRatio,
 			final int minNumInliers )
 	{
 		inliers.clear();
 		
-		for ( final P m : candidates )
+		for ( final E m : candidates )
 		{
 			//m.apply( this );
 			if ( this.getDistance( m ) < epsilon ) inliers.add( m );
@@ -138,9 +138,9 @@ A:		while ( i < iterations )
 	}
 
 	@Override
-	final public boolean test(
-			final Collection< P > candidates,
-			final Collection< P > inliers,
+	final public < E extends P > boolean test(
+			final Collection< E > candidates,
+			final Collection< E > inliers,
 			final double epsilon,
 			final double minInlierRatio )
 	{

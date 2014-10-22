@@ -3,9 +3,10 @@ package mpicbg.models;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
+
+import mpicbg.AbstractFunction;
 
 /**
  * Abstract class for arbitrary transformation models to be applied
@@ -54,10 +55,27 @@ import java.util.Random;
  * @author Stephan Saalfeld <saalfeld@mpi-cbg.de>
  * @version 0.4b
  */
-public abstract class AbstractModel< M extends AbstractModel< M > > implements Model< M >, Serializable
+public abstract class AbstractModel< M extends AbstractModel< M > > extends AbstractFunction< M, PointMatch > implements Model< M >, Serializable
 {
 	private static final long serialVersionUID = -1427631349865842779L;
-	
+
+	@Override
+	public void fit( final M function, final Collection< ? extends PointMatch > matches )
+			throws NotEnoughDataPointsException, IllDefinedDataPointsException
+	{
+		this.fit( matches );
+	}
+
+	@Override
+	public float getDistance( final PointMatch pm )
+	{
+		pm.apply( this );
+		return pm.getDistance();
+	}
+
+	@Override
+	public int getMinNumFitables() { return getMinNumMatches(); }
+
 	/**
 	 * @deprecated "getMinSetSize" doesn't mean anything---use the more
 	 *   speaking {@link #getMinNumMatches()} instead.  
@@ -95,71 +113,6 @@ public abstract class AbstractModel< M extends AbstractModel< M > > implements M
 	@Override
 	final public void setError( final double e ){ setCost( e ); }
 
-	/**
-	 * "Less than" operater to make {@link AbstractModel Models} comparable.
-	 * 
-	 * @param m
-	 * @return false for {@link #cost} < 0.0, otherwise true if
-	 *   {@link #cost this.cost} is smaller than {@link #cost m.cost}
-	 */
-	@Override
-	final public boolean betterThan( final M m )
-	{
-		if ( cost < 0 ) return false;
-		return cost < m.cost;
-	}
-
-	/**
-	 * Test the {@link AbstractModel} for a set of {@link PointMatch} candidates.
-	 * Return true if the number of inliers / number of candidates is larger
-	 * than or equal to min_inlier_ratio, otherwise false.
-	 * 
-	 * Clears inliers and fills it with the fitting subset of candidates.
-	 * 
-	 * Sets {@link #getCost() cost} = 1.0 - |inliers| / |candidates|.
-	 * 
-	 * @param candidates set of point correspondence candidates
-	 * @param inliers set of point correspondences that fit the model
-	 * @param epsilon maximal allowed transfer error
-	 * @param minInlierRatio minimal ratio |inliers| / |candidates| (0.0 => 0%, 1.0 => 100%)
-	 * @param minNumInliers minimally required absolute number of inliers
-	 */
-	@Override
-	final public < P extends PointMatch >boolean test(
-			final Collection< P > candidates,
-			final Collection< P > inliers,
-			final double epsilon,
-			final double minInlierRatio,
-			final int minNumInliers )
-	{
-		inliers.clear();
-		
-		for ( final P m : candidates )
-		{
-			m.apply( this );
-			if ( m.getDistance() < epsilon ) inliers.add( m );
-		}
-		
-		final float ir = ( float )inliers.size() / ( float )candidates.size();
-		setCost( Math.max( 0.0, Math.min( 1.0, 1.0 - ir ) ) );
-		
-		return ( inliers.size() >= minNumInliers && ir > minInlierRatio );
-	}
-	
-	/**
-	 * Call {@link #test(Collection, Collection, double, double, int)} with
-	 * minNumInliers = {@link #getMinNumMatches()}.
-	 */
-	@Override
-	final public < P extends PointMatch >boolean test(
-			final Collection< P > candidates,
-			final Collection< P > inliers,
-			final double epsilon,
-			final double minInlierRatio )
-	{
-		return test( candidates, inliers, epsilon, minInlierRatio, getMinNumMatches() );
-	}
-		
 	/**
 	 * Estimate the {@link AbstractModel} and filter potential outliers by robust
 	 * iterative regression.
@@ -284,7 +237,7 @@ public abstract class AbstractModel< M extends AbstractModel< M > > implements M
 	 *   empty, false otherwise.  If false, {@link AbstractModel} remains unchanged.
 	 */
 	@Override
-	final public < P extends PointMatch >boolean ransac(
+	public < P extends PointMatch >boolean ransac(
 			final List< P > candidates,
 			final Collection< P > inliers,
 			final int iterations,
@@ -293,71 +246,7 @@ public abstract class AbstractModel< M extends AbstractModel< M > > implements M
 			final int minNumInliers )
 		throws NotEnoughDataPointsException
 	{
-		if ( candidates.size() < getMinNumMatches() )
-			throw new NotEnoughDataPointsException( candidates.size() + " data points are not enough to solve the Model, at least " + getMinNumMatches() + " data points required." );
-		
-		cost = Double.MAX_VALUE;
-		
-		final M copy = copy();
-		final M m = copy();
-		
-		inliers.clear();
-		
-		int i = 0;
-		final HashSet< P > minMatches = new HashSet< P >();
-		
-A:		while ( i < iterations )
-		{
-			// choose model.MIN_SET_SIZE disjunctive matches randomly
-			minMatches.clear();
-			for ( int j = 0; j < getMinNumMatches(); ++j )
-			{
-				P p;
-				do
-				{
-					p = candidates.get( ( int )( rnd.nextDouble() * candidates.size() ) );
-				}
-				while ( minMatches.contains( p ) );
-				minMatches.add( p );
-			}
-			try { m.fit( minMatches ); }
-			catch ( final IllDefinedDataPointsException e )
-			{
-				++i;
-				continue;
-			}
-			
-			final ArrayList< P > tempInliers = new ArrayList< P >();
-			
-			int numInliers = 0;
-			boolean isGood = m.test( candidates, tempInliers, epsilon, minInlierRatio );
-			while ( isGood && numInliers < tempInliers.size() )
-			{
-				numInliers = tempInliers.size();
-				try { m.fit( tempInliers ); }
-				catch ( final IllDefinedDataPointsException e )
-				{
-					++i;
-					continue A;
-				}
-				isGood = m.test( candidates, tempInliers, epsilon, minInlierRatio, minNumInliers );
-			}
-			if (
-					isGood &&
-					m.betterThan( copy ) &&
-					tempInliers.size() >= minNumInliers )
-			{
-				copy.set( m );
-				inliers.clear();
-				inliers.addAll( tempInliers );
-			}
-			++i;
-		}
-		if ( inliers.size() == 0 )
-			return false;
-		
-		set( copy );
-		return true;
+		return ransac( this, candidates, inliers, iterations, epsilon, minInlierRatio, minNumInliers );
 	}
 	
 	/**

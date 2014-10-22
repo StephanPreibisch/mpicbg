@@ -3,6 +3,9 @@ package mpicbg.models;
 import java.util.Collection;
 import java.util.List;
 
+import mpicbg.Fitter;
+import mpicbg.Function;
+
 /**
  * {@link CoordinateTransform} whose parameters can be estimated through
  * a least-squares(like) fit.
@@ -43,7 +46,7 @@ import java.util.List;
  * @author Stephan Saalfeld <saalfeld@mpi-cbg.de>
  * @version 0.4b
  */
-public interface Model< M extends Model< M > > extends CoordinateTransform
+public interface Model< M extends Model< M > > extends Function< M, PointMatch >, Fitter< M, PointMatch >, CoordinateTransform
 {
 	/**
 	 * @returns the minimal number of {@link PointMatch PointMatches} required
@@ -57,9 +60,6 @@ public interface Model< M extends Model< M > > extends CoordinateTransform
 	 */
 	@Deprecated
 	public int getMinSetSize();
-	
-	public double getCost();
-	public void setCost( final double c );
 
 	/**
 	 * @deprecated The term Error may be missleading---use {@link #getCost()} instead
@@ -71,15 +71,6 @@ public interface Model< M extends Model< M > > extends CoordinateTransform
 	 */
 	@Deprecated
 	public void setError( final double e );
-
-	/**
-	 * "Less than" operater to make {@link Model Models} comparable.
-	 * 
-	 * @param m
-	 * @return false for {@link #cost} < 0.0, otherwise true if
-	 *   {@link #cost this.cost} is smaller than {@link #cost m.cost}
-	 */
-	public boolean betterThan( final M m );
 	
 	/**
 	 * <p>Fit the {@link Model} to a set of data points minimizing the global
@@ -132,41 +123,7 @@ public interface Model< M extends Model< M > > extends CoordinateTransform
 	 */
 	public < P extends PointMatch >void fit( final Collection< P > matches )
 		throws NotEnoughDataPointsException, IllDefinedDataPointsException;
-	
-	
 
-	/**
-	 * Test the {@link Model} for a set of {@link PointMatch} candidates.
-	 * Return true if the number of inliers / number of candidates is larger
-	 * than or equal to min_inlier_ratio, otherwise false.
-	 * 
-	 * Clears inliers and fills it with the fitting subset of candidates.
-	 * 
-	 * Sets {@link #getCost() cost} = 1.0 - |inliers| / |candidates|.
-	 * 
-	 * @param candidates set of point correspondence candidates
-	 * @param inliers set of point correspondences that fit the model
-	 * @param epsilon maximal allowed transfer error
-	 * @param minInlierRatio minimal ratio |inliers| / |candidates| (0.0 => 0%, 1.0 => 100%)
-	 * @param minNumInliers minimally required absolute number of inliers
-	 */
-	public < P extends PointMatch >boolean test(
-			final Collection< P > candidates,
-			final Collection< P > inliers,
-			final double epsilon,
-			final double minInlierRatio,
-			final int minNumInliers );
-
-	/**
-	 * Call {@link #test(Collection, Collection, double, double, int)} with
-	 * minNumInliers = {@link #getMinNumMatches()}.
-	 */
-	public < P extends PointMatch >boolean test(
-			final Collection< P > candidates,
-			final Collection< P > inliers,
-			final double epsilon,
-			final double minInlierRatio );
-		
 	/**
 	 * Estimate the {@link Model} and filter potential outliers by robust
 	 * iterative regression.
@@ -364,16 +321,4 @@ public interface Model< M extends Model< M > > extends CoordinateTransform
 	public Collection< PointMatch > icp(
 			final List< Point > p,
 			final List< Point > q );
-	
-	/**
-	 * Set the model to m
-	 * @param m
-	 */
-	public void set( final M m );
-
-	
-	/**
-	 * Clone the model.
-	 */
-	public M copy();
 };

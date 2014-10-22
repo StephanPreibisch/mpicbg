@@ -17,6 +17,6 @@ public interface Fitter< F extends Function< F, P >, P >
 {
 	public void fit(
 			final F function,
-			final Collection< P > fitables )
+			final Collection< ? extends P > fitables )
 				throws NotEnoughDataPointsException, IllDefinedDataPointsException;
 }
