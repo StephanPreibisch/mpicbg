@@ -8,7 +8,7 @@ package mpicbg;
  * @author preibischs
  *
  */
-public interface Model2 extends Function< PointMatch2 >, Fitter< Model2, PointMatch2 >
+public interface Model2< M extends Model2< M > > extends Function< M, PointMatch2 >, Fitter< M, PointMatch2 >
 {
 
 }
