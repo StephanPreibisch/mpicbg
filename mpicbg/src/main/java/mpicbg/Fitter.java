@@ -13,7 +13,7 @@ import mpicbg.models.NotEnoughDataPointsException;
  * @param <F> - any Function that can deal with P
  * @param <P> - any Fitable, actually Object (see Fitable interface)
  */
-public interface Fitter< F extends Function< F, P >, P extends Fitable >
+public interface Fitter< F extends Function< F, P >, P >
 {
 	public void fit(
 			final F function,

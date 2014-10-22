@@ -7,7 +7,7 @@ package mpicbg;
  * @author preibischs
  *
  */
-public interface PointMatch2 extends Fitable
+public interface PointMatch2
 {
 	/**
 	 * apply would be called by Function.getDistance( PointMatch2 )

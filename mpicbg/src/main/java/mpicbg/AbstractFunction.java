@@ -9,7 +9,7 @@ import java.util.Random;
 import mpicbg.models.IllDefinedDataPointsException;
 import mpicbg.models.NotEnoughDataPointsException;
 
-public abstract class AbstractFunction< F extends Function< F, P >, P extends Fitable > implements Function< F, P >
+public abstract class AbstractFunction< F extends Function< F, P >, P > implements Function< F, P >
 {
 	// real random
 	//final Random random = new Random( System.currentTimeMillis() );

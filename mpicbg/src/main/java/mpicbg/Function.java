@@ -14,7 +14,7 @@ import mpicbg.models.PointMatch;
  *
  * @param <P> - any Fitable (rather Object) it can deal with
  */
-public interface Function< F extends Function< F, P >, P extends Fitable >
+public interface Function< F extends Function< F, P >, P >
 {
 	public double getCost();
 	public void setCost( final double c );
