@@ -5,7 +5,14 @@ import java.util.List;
 
 import mpicbg.models.NotEnoughDataPointsException;
 
-public interface Function< P >
+/**
+ * A function itself, can compute distances to/within <P> and do ransac if it has a Fitter
+ * 
+ * @author preibischs
+ *
+ * @param <P> - any Fitable (rather Object) it can deal with
+ */
+public interface Function< P extends Fitable >
 {
 	/**
 	 * Get distance/error for a certain fitable and this function
@@ -19,6 +26,7 @@ public interface Function< P >
 	 * minNumInliers = {@link #getMinNumMatches()}.
 	 */
 	public boolean ransac(
+			final Fitter< Function< P >, P > fitter,
 			final List< P > candidates,
 			final Collection< P > inliers,
 			final int iterations,
