@@ -2,6 +2,9 @@ package mpicbg;
 
 import java.util.Collection;
 
+import mpicbg.models.IllDefinedDataPointsException;
+import mpicbg.models.NotEnoughDataPointsException;
+
 /**
  * Something that fits a function to fitables
  * 
@@ -10,9 +13,10 @@ import java.util.Collection;
  * @param <F> - any Function that can deal with P
  * @param <P> - any Fitable, actually Object (see Fitable interface)
  */
-public interface Fitter< F extends Function< P >, P extends Fitable >
+public interface Fitter< F extends Function< F, P >, P extends Fitable >
 {
 	public void fit(
 			final F function,
-			final Collection< P > fitables );
+			final Collection< P > fitables )
+				throws NotEnoughDataPointsException, IllDefinedDataPointsException;
 }
